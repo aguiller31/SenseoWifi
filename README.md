@@ -65,7 +65,7 @@ In the end the PCB will not be visible from the outside, powered from the inside
 |------|-------------|
 | 1× Custom PCB | See [`SenseoWifi-PCB` folder](SenseoWifi-PCB) for schematic |
 | 1× WeMos D1 Mini | Microcontroller, [learn more…](https://wiki.wemos.cc/products:d1:d1_mini) |
-| 4× Sharp PC817 | Optocoupler interfacing with the Senseo board ([datasheet](http://www.sharp-world.com/products/device/lineup/data/pdf/datasheet/pc817xnnsz_e.pdf)). Thanks to these, the Senseo can be connected to AC power and to your PC via USB at the same time. Try to avoid this constellation and be cautious with active AC power. |
+| 4× Sharp PC817 | Optocoupler interfacing with the Senseo board ([datasheet](https://global.sharp/products/device/lineup/data/pdf/datasheet/PC817XxNSZ1B_e.pdf)). Thanks to these, the Senseo can be connected to AC power and to your PC via USB at the same time. Try to avoid this constellation and be cautious with active AC power. |
 | 3× 470Ω Resistor | |
 | 1× 1.5kΩ Resistor | |
 | 1× Push button | To reset the microcontroller from the outside |
