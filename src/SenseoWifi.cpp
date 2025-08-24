@@ -23,6 +23,84 @@ HomieNode senseoNode("machine", "senseo-wifi", "senseo-wifi");
 HomieSetting<bool> CupDetectorAvailableSetting("cupdetector", "Enable cup detection (TCRT5000)");
 HomieSetting<bool> BuzzerSetting("buzzer", "Enable buzzer sounds (no water, cup finished, ...)");
 
+HomieNode paramsNode("params", "Parameters", "parameter");
+HomieNode systemNode("system", "System", "system");
+// Publie la valeur courante de chaque paramètre au démarrage
+void sendCurrentParams() {
+    paramsNode.setProperty("pulseDurLedSlow").send(String(pulseDurLedSlow));
+    paramsNode.setProperty("pulseDurLedFast").send(String(pulseDurLedFast));
+    paramsNode.setProperty("pulseDurTolerance").send(String(pulseDurTolerance));
+    paramsNode.setProperty("pulseContThreshold").send(String(pulseContThreshold));
+    paramsNode.setProperty("HeatingTime").send(String(HeatingTime));
+    paramsNode.setProperty("HeatingTimeTol").send(String(HeatingTimeTol));
+    paramsNode.setProperty("Brew1CupSeconds").send(String(Brew1CupSeconds));
+    paramsNode.setProperty("Brew2CupSeconds").send(String(Brew2CupSeconds));
+    paramsNode.setProperty("BrewHeat1CupSeconds").send(String(BrewHeat1CupSeconds));
+    paramsNode.setProperty("BrewHeat2CupSeconds").send(String(BrewHeat2CupSeconds));
+    paramsNode.setProperty("CupDebounceInterval").send(String(CupDebounceInterval));
+    paramsNode.setProperty("LedIgnoreChangeDuration").send(String(LedIgnoreChangeDuration));
+    paramsNode.setProperty("pressDuration").send(String(pressDuration));
+    systemNode.setProperty("reboot").send("false");
+}
+void setupSettingsNode(){
+  systemNode.advertise("reboot")
+      .setName("Reboot")
+      .setDatatype("boolean")
+      .settable([](const HomieRange&, const String& value) {
+          if (value == "true") {
+            senseoNode.setProperty("debug").send(String("Reboot '") + String(value));
+            
+              ESP.restart();
+          }
+          return true;
+      });
+      systemNode.advertise("getSettings")
+      .setName("Get Settings")
+      .setDatatype("boolean")
+      .settable([](const HomieRange&, const String& value) {
+          if (value == "true") {
+            senseoNode.setProperty("debug").send(String("Sending settings '") + String(value));
+
+              sendCurrentParams();
+          }
+          return true;
+      });
+      
+  }
+// Handler générique pour les paramètres int
+template<typename T>
+auto makeIntHandler(T& variable, const char* name) {
+  return [&, name](const HomieRange& range, const String& value) {
+    int val = value.toInt();
+    if(val < 0) return false; // Optionnel: refuse valeurs négatives
+    variable = val;
+    sendCurrentParams();
+    senseoNode.setProperty("debug").send(String("Paramètre '") + name + "' mis à jour à " + String(val));
+    return true;
+  };
+}
+
+
+void setupParamsNode() {
+  paramsNode.advertise("pulseDurLedSlow").setName("pulseDurLedSlow").setDatatype("integer").settable(makeIntHandler(pulseDurLedSlow, "pulseDurLedSlow")).setRetained(true);
+  paramsNode.advertise("pulseDurLedFast").setName("pulseDurLedFast").setDatatype("integer").settable(makeIntHandler(pulseDurLedFast, "pulseDurLedFast")).setRetained(true);
+  paramsNode.advertise("pulseDurTolerance").setName("pulseDurTolerance").setDatatype("integer").settable(makeIntHandler(pulseDurTolerance, "pulseDurTolerance")).setRetained(true);
+  paramsNode.advertise("pulseContThreshold").setName("pulseContThreshold").setDatatype("integer").settable(makeIntHandler(pulseContThreshold, "pulseContThreshold")).setRetained(true);
+
+  paramsNode.advertise("HeatingTime").setName("HeatingTime").setDatatype("integer").settable(makeIntHandler(HeatingTime, "HeatingTime")).setRetained(true);
+  paramsNode.advertise("HeatingTimeTol").setName("HeatingTimeTol").setDatatype("integer").settable(makeIntHandler(HeatingTimeTol, "HeatingTimeTol")).setRetained(true);
+  paramsNode.advertise("Brew1CupSeconds").setName("Brew1CupSeconds").setDatatype("integer").settable(makeIntHandler(Brew1CupSeconds, "Brew1CupSeconds")).setRetained(true);
+  paramsNode.advertise("Brew2CupSeconds").setName("Brew2CupSeconds").setDatatype("integer").settable(makeIntHandler(Brew2CupSeconds, "Brew2CupSeconds")).setRetained(true);
+  paramsNode.advertise("BrewHeat1CupSeconds").setName("BrewHeat1CupSeconds").setDatatype("integer").settable(makeIntHandler(BrewHeat1CupSeconds, "BrewHeat1CupSeconds")).setRetained(true);
+  paramsNode.advertise("BrewHeat2CupSeconds").setName("BrewHeat2CupSeconds").setDatatype("integer").settable(makeIntHandler(BrewHeat2CupSeconds, "BrewHeat2CupSeconds")).setRetained(true);
+
+  paramsNode.advertise("CupDebounceInterval").setName("CupDebounceInterval").setDatatype("integer").settable(makeIntHandler(CupDebounceInterval, "CupDebounceInterval")).setRetained(true);
+  paramsNode.advertise("LedIgnoreChangeDuration").setName("LedIgnoreChangeDuration").setDatatype("integer").settable(makeIntHandler(LedIgnoreChangeDuration, "LedIgnoreChangeDuration")).setRetained(true);
+
+  paramsNode.advertise("pressDuration").setName("pressDuration").setDatatype("integer").settable(makeIntHandler(pressDuration, "pressDuration")).setRetained(true);
+
+}
+
 /**
 * Called by the LED changed interrupt
 */
@@ -250,6 +328,7 @@ void setupHandler() {
   senseoNode.setProperty("outOfWater").send("false");
   senseoNode.setProperty("brew").send("false");
   senseoNode.setProperty("debug").send("Machine started");
+  sendCurrentParams();
 }
 
 /**
@@ -362,8 +441,12 @@ void setup() {
   if (BuzzerSetting.get()) senseoNode.advertise("buzzer").setName("Buzzer").settable(buzzerHandler).setDatatype("enum").setFormat("tone1,tone2,tone3,tone4");
 
   if (BuzzerSetting.get()) tone(beeperPin, 1536, 2000);
+ setupSettingsNode();
+   setupParamsNode();
   Homie.onEvent(onHomieEvent);
   Homie.setup();
+   
+   
 }
 
 void loop() {

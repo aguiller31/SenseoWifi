@@ -8,25 +8,24 @@
 #define SenseoConstants_h
 
 // LED state machine
-// Measure your timings by activating debugging in ledChangedRoutine()
-static const int pulseDurLedSlow = 1000;                   // duration of one pulse when LED is blinking slow in milliseconds (state LED_SLOW)
-static const int pulseDurLedFast = 100;                    // duration of one pulse when LED is blinking fast in milliseconds (state LED_FAST)
-static const int pulseDurTolerance = 10;                   // tolerance for pulse duration. With the tested senseo, tolerance was not more than +-1ms
-static const int pulseContThreshold = 2 * pulseDurLedSlow; // time before switching to continuous LED state (state LED_ON and state LED_OFF)
+extern int pulseDurLedSlow;                   // duration of one pulse when LED is blinking slow in milliseconds (state LED_SLOW)
+extern int pulseDurLedFast;                   // duration of one pulse when LED is blinking fast in milliseconds (state LED_FAST)
+extern int pulseDurTolerance;                 // tolerance for pulse duration
+extern int pulseContThreshold;                // time before switching to continuous LED state
 
 // Senseo state machine (in seconds)
-static const int HeatingTime = 70;
-static const int HeatingTimeTol = 15;
-static const int Brew1CupSeconds = 21;
-static const int Brew2CupSeconds = 41;
-static const int BrewHeat1CupSeconds = 55;
-static const int BrewHeat2CupSeconds = 85;
+extern int HeatingTime;
+extern int HeatingTimeTol;
+extern int Brew1CupSeconds;
+extern int Brew2CupSeconds;
+extern int BrewHeat1CupSeconds;
+extern int BrewHeat2CupSeconds;
 
 // Debouncing (in milliseconds)
-static const int CupDebounceInterval = 500;
-static const int LedIgnoreChangeDuration = 5;
+extern int CupDebounceInterval;
+extern int LedIgnoreChangeDuration;
 
 // Duration of button "press" (in milliseconds)
-static const int pressDuration = 150;
+extern int pressDuration;
 
 #endif
